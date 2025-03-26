@@ -5,6 +5,10 @@ from langchain_openai import AzureChatOpenAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.schema import HumanMessage, AIMessage
 from ollama_llm_manager import get_installed_models, pull_model
+from config import load_config
+
+# Load configuration
+config = load_config()
 
 def stream_ollama_response(messages, model_name):
     """
@@ -133,23 +137,23 @@ def generate_css(rtl_enabled=True):
 if 'messages' not in st.session_state:
     st.session_state.messages = []
 if 'model_type' not in st.session_state:
-    st.session_state.model_type = "Ollama"
+    st.session_state.model_type = config["default_model_type"]
 if 'ollama_model' not in st.session_state:
-    st.session_state.ollama_model = None
+    st.session_state.ollama_model = config["default_ollama_model"]
 if 'rtl_enabled' not in st.session_state:
-    st.session_state.rtl_enabled = True
+    st.session_state.rtl_enabled = config["rtl_enabled"]
 if 'azure_deployment' not in st.session_state:
-    st.session_state.azure_deployment = ""
+    st.session_state.azure_deployment = config["azure_deployment"]
 if 'azure_api_version' not in st.session_state:
-    st.session_state.azure_api_version = "2023-06-01-preview"
+    st.session_state.azure_api_version = config["azure_api_version"]
 if 'azure_endpoint' not in st.session_state:
-    st.session_state.azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT", "")
+    st.session_state.azure_endpoint = config["azure_endpoint"]
 if 'azure_api_key' not in st.session_state:
-    st.session_state.azure_api_key = os.getenv("AZURE_OPENAI_API_KEY", "")
+    st.session_state.azure_api_key = config["azure_api_key"]
 if 'gemini_model' not in st.session_state:
-    st.session_state.gemini_model = "gemini-1.5-pro"
+    st.session_state.gemini_model = config["gemini_model"]
 if 'gemini_api_key' not in st.session_state:
-    st.session_state.gemini_api_key = os.getenv("GOOGLE_API_KEY", "")
+    st.session_state.gemini_api_key = config["gemini_api_key"]
 
 # Sidebar configuration
 st.sidebar.header("Model Settings")
@@ -229,16 +233,16 @@ elif st.session_state.model_type == "Google Gemini":
         os.environ["GOOGLE_API_KEY"] = st.session_state.gemini_api_key
 
 # Main UI
-st.header("LLM Chatbot")
+st.header(config["app_title"])
 
 # Apply CSS based on RTL setting
 st.markdown(generate_css(rtl_enabled), unsafe_allow_html=True)
 
 # Display current provider in main area
-st.info(f"Current provider: {st.session_state.model_type}")
+st.info(f"{config['provider_info_prefix']}{st.session_state.model_type}")
 
 # Display chat messages
-st.subheader("Chat History")
+st.subheader(config["chat_history_title"])
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         # Apply RTL/LTR styling with message-specific formatting
